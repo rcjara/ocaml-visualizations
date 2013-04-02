@@ -1,0 +1,4 @@
+true:package(core),thread
+<*>: package(ounit)
+<*>: package(graphics)
+
