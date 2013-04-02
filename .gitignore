@@ -1,0 +1,7 @@
+*.sw*
+_build/*
+*.native
+*.byte
+*.out
+*.cm*
+
