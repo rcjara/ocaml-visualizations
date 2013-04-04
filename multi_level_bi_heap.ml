@@ -77,7 +77,8 @@ module BH_Findmin: HeapFnct =
       match ts with
       | [] -> raise EmptyHeap
       | _  -> let (T (r, Node (x, ts1)), ts2) = removeMinTree ts in
-              merge (List.rev (List.map (fun t -> T (r - 1, t)) ts1)) ts2
+              let (new_ts, _) = (List.fold_left (fun (acc, o) bh -> ((T (o - 1, bh)) :: acc, o -1) ) ([], r) ts1) in
+              merge new_ts ts2
 
     let fromList lst =
       List.fold_left (fun bh x -> insert x bh) empty lst
@@ -100,7 +101,7 @@ module BH_Findmin: HeapFnct =
     | Recursive E -> []
 
     let label = function
-    | Top _ -> "ROOT"
+    | Top _ -> "RT"
     | Head (T (o, _)) ->
         let f = float_of_int o in
         let size = 2. ** f in

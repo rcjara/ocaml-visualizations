@@ -83,6 +83,7 @@ module Drawer: DrawFnct =
 module BH_Drawer = Drawer(BH)
 
 let a = ref BH.empty
+let i = ref 0
 
 let size = 800
 
@@ -94,6 +95,19 @@ let draw _ =
 
 let insert_and_draw x =
   a := BH.insert x !a;
+  draw ()
+
+let inc_insert _ =
+  a := BH.insert !i !a;
+  i := !i + 1;
+  draw ()
+
+let rand_insert _ =
+  a := BH.insert (Random.int 100) !a;
+  draw ()
+
+let delete_and_draw _ =
+  a := BH.deleteMin !a;
   draw ()
 
 let setup _ =
