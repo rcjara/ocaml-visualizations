@@ -93,7 +93,8 @@ let draw _ =
   BH_Drawer.draw ((size - width) / 2, size - 20) drawable
 
 let insert_and_draw x =
-  a := BH.insert x !a
+  a := BH.insert x !a;
+  draw ()
 
 let setup _ =
   let str_size = (string_of_int size) in
