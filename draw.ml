@@ -80,37 +80,49 @@ module Drawer: DrawFnct =
         ()
   end
 
-module BH_Drawer = Drawer(BH)
+module BH_Drawer = Drawer(DBH)
 
-let a = ref BH.empty
+let a = ref DBH.empty
 let i = ref 0
 
 let size = 800
 
 let draw _ =
   clear_graph ();
-  let drawable = (BH.to_struc !a) in
+  let drawable = (DBH.to_struc !a) in
   let (width, _) = BH_Drawer.dimensions drawable in
   BH_Drawer.draw ((size - width) / 2, size - 20) drawable
 
+let draw_struct s =
+  clear_graph ();
+  let (width, _) = BH_Drawer.dimensions s in
+  BH_Drawer.draw ((size - width) / 2, size - 20) s
+
 let insert_and_draw x =
-  a := BH.insert x !a;
+  a := DBH.insert x !a;
   draw ()
 
 let inc_insert _ =
-  a := BH.insert !i !a;
+  a := DBH.insert !i !a;
   i := !i + 1;
   draw ()
 
 let rand_insert _ =
-  a := BH.insert (Random.int 100) !a;
+  a := DBH.insert (Random.int 100) !a;
   draw ()
 
 let delete_and_draw _ =
-  a := BH.deleteMin !a;
+  a := DBH.deleteMin !a;
   draw ()
+
+let o0 = DBH.binomial_tree 0 1
+let o1 = DBH.binomial_tree 1 2
+let o2 = DBH.binomial_tree 2 3
+let o3a = DBH.binomial_tree 3 0
+let o3b = DBH.binomial_tree 3 1
 
 let setup _ =
   let str_size = (string_of_int size) in
   open_graph (" " ^ str_size ^ "x" ^ str_size);
-  draw ()
+  draw_struct o0
+

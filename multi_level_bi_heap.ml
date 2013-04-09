@@ -1,6 +1,7 @@
 open Shared_types
 open Heap_types
 open Multi_level_types
+open Binomial_heap
 
 module type DrawableHeap =
 sig
@@ -8,87 +9,21 @@ sig
   include Drawee
 
   val to_struc: heap -> struc
+  val binomial_tree: int -> t -> struc
+  val link_tree: struc -> struc -> struc
 end
 
-module type HeapFnct =
-  functor (Elem: ORDERED) -> DrawableHeap with type elem = Elem.t
+module type DrawableHeapFnct =
+  functor (Elem: Ord) -> DrawableHeap with type t = Elem.t
 
-module BH_Findmin: HeapFnct =
-  functor (Elem: ORDERED) ->
-  struct
-    type elem = Elem.t
-
-    type tree =
-      | E
-      | Node of elem * tree list
-
-    type b_tree = T of int * tree
-
-    type heap = b_tree list
-
-    let rank = function T (r, _) -> r
-    let root = function T (_, Node (x, _)) -> x
-
-    let empty = []
-    let isEmpty = function
-      | [] -> true
-      | _ -> false
-
-    let link (t1:b_tree) (t2:b_tree) :b_tree =
-      match t1, t2 with
-      | (T (r, (Node (x1, c1))), T (_, (Node (x2, c2)))) ->
-          if Elem.lte x1 x2
-          then (T (r + 1, Node (x1, (Node (x2, c2)) :: c1)))
-          else (T (r + 1, Node (x2, (Node (x1, c1)) :: c2)))
-
-    let rec insTree t = function
-      | [] -> [t]
-      | t' :: ts' as ts -> if rank t < rank t'
-                           then t :: ts
-                           else insTree (link t t') ts'
-
-    let insert x ts = insTree (T (0, Node (x, []))) ts
-
-    let rec merge ts1 ts2 =
-      match ts1, ts2 with
-      | ([], ts) | (ts, []) -> ts
-      | ((t1 :: ts1'), (t2 :: ts2')) ->
-          if rank t1 < rank t2      then t1 :: (merge ts1' ts2)
-          else if rank t2 > rank t1 then t2 :: (merge ts1 ts2')
-          else insTree (link t1 t2) (merge ts1' ts2')
-
-    let rec removeMinTree = function
-      | [t]     -> (t, [])
-      | t :: ts ->
-          let (t', ts') = removeMinTree ts in
-            if root t < root t'
-            then (t, ts)
-            else (t', t :: ts')
-
-    (* 3.6 *)
-    let findMin ts =
-      match ts with
-      | [] -> raise EmptyHeap
-      | _  ->
-        let first_item::_ = ts in
-        List.fold_left (fun a t -> if Elem.lte a (root t) then a else root t) (root first_item) ts
-
-    let deleteMin ts =
-      match ts with
-      | [] -> raise EmptyHeap
-      | _  -> let (T (r, Node (x, ts1)), ts2) = removeMinTree ts in
-              let (new_ts, _) = (List.fold_left (fun (acc, o) bh -> ((T (o - 1, bh)) :: acc, o -1) ) ([], r) ts1) in
-              merge new_ts ts2
-
-    let fromList lst =
-      List.fold_left (fun bh x -> insert x bh) empty lst
-
+module DrawableBiHeap (Elem: Ord) =
+struct
+    include BinomialHeap(Elem)
     (* Drawing code *)
     type struc =
       | Top       of heap
       | Head      of b_tree
       | Recursive of tree
-
 
     let to_struc heap = Top heap
 
@@ -114,8 +49,17 @@ module BH_Findmin: HeapFnct =
     | Head _ -> HEAD
     | Recursive _ -> RECURSIVE
 
+    let binomial_tree o item =
+      let rec range i j = if i > j then [] else item :: (range (i+1) j) in
+      let num_elements = int_of_float (2.0 ** (float_of_int o)) in
+      let heap = fromList (range 1 num_elements) in
+      let tree::_ = heap in
+      Head tree
 
+    let link_tree (Head t1) (Head t2) = Head (link t1 t2)
   end
 
-module BH = BH_Findmin(OInt)
+
+module BH = BinomialHeap(MyInt)
+module DBH = DrawableBiHeap(MyInt)
 
